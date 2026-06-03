@@ -1,4 +1,4 @@
-# vscode-extensions
+![vscode-extensions — track & reinstall your VS Code setup](assets/banner.png)
 
 _[English](README.md) | 日本語_
 
