@@ -1,6 +1,9 @@
 # macOS
 .DS_Store
 
-# Editor / tooling caches
+# Claude Code
 .claude/
+CLAUDE.md
+
+# Editor / tooling caches
 node_modules/
