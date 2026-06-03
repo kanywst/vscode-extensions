@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Optional git pre-commit hook: keep extensions.list in sync on every commit.
+# Install with:  ln -s ../../bin/pre-commit .git/hooks/pre-commit
+#
+# If the editor CLI is missing (e.g. on a CI checkout) it does nothing.
+
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+CODE_BIN="${CODE_BIN:-code}"
+
+command -v "${CODE_BIN}" >/dev/null 2>&1 || exit 0
+
+"${ROOT}/bin/export.sh" >/dev/null
+git add "${ROOT}/extensions.list"
