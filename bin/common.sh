@@ -21,6 +21,13 @@ require_code_bin() {
   exit 1
 }
 
+# Echo a value only when non-empty. A bare echo of an empty var prints a blank
+# line, which comm would treat as an extension ID (phantom drift).
+emit() {
+  [ -n "${1}" ] && printf '%s\n' "${1}"
+  return 0
+}
+
 # Installed extension IDs, lowercased + sorted, one per line.
 installed_extensions() {
   require_code_bin

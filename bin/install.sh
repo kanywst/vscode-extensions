@@ -33,7 +33,7 @@ echo "Installing ${count} extensions..."
 # Assign first so a failed listing trips set -e instead of comm seeing empty input.
 installed="$(installed_extensions)"
 tracked="$(tracked_extensions)"
-missing="$(LC_ALL=C comm -13 <(echo "${installed}") <(echo "${tracked}"))"
+missing="$(LC_ALL=C comm -13 <(emit "${installed}") <(emit "${tracked}"))"
 
 if [ -n "${missing}" ]; then
   echo

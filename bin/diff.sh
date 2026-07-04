@@ -8,8 +8,8 @@ source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 installed="$(installed_extensions)"
 tracked="$(tracked_extensions)"
 
-to_add="$(LC_ALL=C comm -23 <(echo "${installed}") <(echo "${tracked}"))"
-to_remove="$(LC_ALL=C comm -13 <(echo "${installed}") <(echo "${tracked}"))"
+to_add="$(LC_ALL=C comm -23 <(emit "${installed}") <(emit "${tracked}"))"
+to_remove="$(LC_ALL=C comm -13 <(emit "${installed}") <(emit "${tracked}"))"
 
 drift=0
 
