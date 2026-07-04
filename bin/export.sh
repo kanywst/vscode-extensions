@@ -16,7 +16,8 @@ else
   installed_extensions > "${tmp}"
 fi
 
-mv "${tmp}" "${LIST_FILE}"
+# Write through with cat, not mv, to preserve a symlinked list and its mode.
+cat "${tmp}" > "${LIST_FILE}"
 
 count="$(grep -c '' "${LIST_FILE}" || true)"
 echo "Exported ${count} extensions to ${LIST_FILE#"${REPO_ROOT}"/}"
