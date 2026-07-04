@@ -11,9 +11,8 @@ LIST_FILE="${REPO_ROOT}/extensions.list"
 # Editor CLI. Override for Cursor / VSCodium / Insiders, e.g. CODE_BIN=cursor.
 CODE_BIN="${CODE_BIN:-code}"
 
-# Hard-fail if the editor CLI is missing. Called lazily by the functions that
-# actually need it, so list-only tooling (bin/lint.sh, CI) can source this file
-# and read extensions.list on a machine without the editor installed.
+# Fail if the editor CLI is missing. Called lazily so list-only tools (lint, CI)
+# can source this file without the editor installed.
 require_code_bin() {
   command -v "${CODE_BIN}" >/dev/null 2>&1 && return 0
   echo "error: '${CODE_BIN}' CLI not found on PATH." >&2
