@@ -5,6 +5,11 @@
 # shellcheck source=bin/common.sh
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
+if [ ! -f "${LIST_FILE}" ]; then
+  echo "error: ${LIST_FILE} not found." >&2
+  exit 1
+fi
+
 installed="$(installed_extensions)"
 tracked="$(tracked_extensions)"
 
