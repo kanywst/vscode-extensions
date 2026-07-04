@@ -30,7 +30,10 @@ echo "Installing ${count} extensions..."
 # --force also updates to latest; don't abort if one ID is missing, report below.
 "${CODE_BIN}" "${args[@]}" --force || true
 
-missing="$(LC_ALL=C comm -13 <(installed_extensions) <(tracked_extensions))"
+# Assign first so a failed listing trips set -e instead of comm seeing empty input.
+installed="$(installed_extensions)"
+tracked="$(tracked_extensions)"
+missing="$(LC_ALL=C comm -13 <(echo "${installed}") <(echo "${tracked}"))"
 
 if [ -n "${missing}" ]; then
   echo
