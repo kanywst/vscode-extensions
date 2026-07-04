@@ -8,13 +8,20 @@ source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 tmp="$(mktemp)"
 trap 'rm -f "${tmp}"' EXIT
 
-if [ "${1:-}" = "--merge" ]; then
-  installed_extensions > "${tmp}"
-  tracked_extensions >> "${tmp}"
-  LC_ALL=C sort -u "${tmp}" -o "${tmp}"
-else
-  installed_extensions > "${tmp}"
-fi
+case "${1:-}" in
+  --merge)
+    installed_extensions > "${tmp}"
+    tracked_extensions >> "${tmp}"
+    LC_ALL=C sort -u "${tmp}" -o "${tmp}"
+    ;;
+  "")
+    installed_extensions > "${tmp}"
+    ;;
+  *)
+    echo "error: unknown option '${1}' (expected --merge)" >&2
+    exit 1
+    ;;
+esac
 
 # Write through with cat, not mv, to preserve a symlinked list and its mode.
 cat "${tmp}" > "${LIST_FILE}"
