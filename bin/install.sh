@@ -14,7 +14,8 @@ require_code_bin
 
 # One editor launch for the whole list: a single argv of repeated flags.
 # Pre-evaluate so a failed listing trips set -e instead of a lost subshell status.
-tracked="$(tracked_extensions)"
+# uniq: a hand-edited duplicate would otherwise be miscounted and mis-reported.
+tracked="$(tracked_extensions | LC_ALL=C uniq)"
 args=()
 count=0
 while IFS= read -r ext; do

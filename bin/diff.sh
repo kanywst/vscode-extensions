@@ -11,7 +11,8 @@ if [ ! -f "${LIST_FILE}" ]; then
 fi
 
 installed="$(installed_extensions)"
-tracked="$(tracked_extensions)"
+# uniq: a hand-edited duplicate would otherwise line up as phantom drift in comm.
+tracked="$(tracked_extensions | LC_ALL=C uniq)"
 
 to_add="$(LC_ALL=C comm -23 <(emit "${installed}") <(emit "${tracked}"))"
 to_remove="$(LC_ALL=C comm -13 <(emit "${installed}") <(emit "${tracked}"))"
