@@ -37,8 +37,9 @@ installed_extensions() {
 # Tracked extension IDs from the list file: strip comments / blanks, lowercase, sort.
 tracked_extensions() {
   [ -f "${LIST_FILE}" ] || return 0
-  sed -e 's/#.*//' -e 's/[[:space:]]//g' "${LIST_FILE}" \
-    | grep -v '^$' \
+  # Delete blank lines with sed, not grep -v: grep exits 1 on an all-blank list,
+  # which would trip pipefail/set -e in every caller.
+  sed -e 's/#.*//' -e 's/[[:space:]]//g' -e '/^$/d' "${LIST_FILE}" \
     | tr '[:upper:]' '[:lower:]' \
     | LC_ALL=C sort
 }

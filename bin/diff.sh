@@ -21,13 +21,13 @@ drift=0
 if [ -n "${to_add}" ]; then
   drift=1
   echo "Installed but NOT in extensions.list (run bin/export.sh to record):"
-  echo "${to_add}" | sed 's/^/  + /'
+  emit "${to_add}" | sed 's/^/  + /'
 fi
 
 if [ -n "${to_remove}" ]; then
   drift=1
   echo "In extensions.list but NOT installed (run bin/install.sh to add):"
-  echo "${to_remove}" | sed 's/^/  - /'
+  emit "${to_remove}" | sed 's/^/  - /'
 fi
 
 if [ "${drift}" -eq 0 ]; then
