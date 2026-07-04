@@ -2,6 +2,7 @@
 # Show drift between installed extensions and extensions.list.
 # Exit 0 when in sync, 1 when there is drift (handy for CI / pre-commit).
 
+# shellcheck source=bin/common.sh
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 installed="$(installed_extensions)"
