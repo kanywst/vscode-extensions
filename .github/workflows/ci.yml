@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  shellcheck:
+    name: shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run shellcheck
+        # -x follows `source common.sh`. --severity=warning ignores style/info
+        # notes (SC2001 etc.) so the run is green on cosmetic-only findings.
+        run: |
+          shopt -s nullglob
+          shellcheck -x --severity=warning bin/*.sh bin/pre-commit
+
+  lint-list:
+    name: extensions.list is canonical
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check extensions.list
+        run: bin/lint.sh
