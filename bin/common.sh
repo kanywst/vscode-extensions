@@ -31,7 +31,9 @@ emit() {
 # Installed extension IDs, lowercased + sorted, one per line.
 installed_extensions() {
   require_code_bin
-  "${CODE_BIN}" --list-extensions | tr '[:upper:]' '[:lower:]' | LC_ALL=C sort
+  # tr -d '\r': the CLI emits CRLF on Windows/WSL/Git Bash; tracked_extensions
+  # already strips it, so drop it here too or every ID looks like drift.
+  "${CODE_BIN}" --list-extensions | tr -d '\r' | tr '[:upper:]' '[:lower:]' | LC_ALL=C sort
 }
 
 # Tracked extension IDs from the list file: strip comments / blanks, lowercase, sort.
