@@ -19,10 +19,9 @@ tracked="$(tracked_extensions | LC_ALL=C uniq)"
 args=()
 count=0
 while IFS= read -r ext; do
-  [ -z "${ext}" ] && continue
   args+=(--install-extension "${ext}")
   count=$((count + 1))
-done <<< "${tracked}"
+done < <(emit "${tracked}")
 
 if [ "${count}" -eq 0 ]; then
   echo "extensions.list is empty; nothing to install."
