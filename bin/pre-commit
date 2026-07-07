@@ -2,6 +2,8 @@
 # Optional git pre-commit hook: keep extensions.list in sync on every commit.
 # Install with:  ln -s ../../bin/pre-commit .git/hooks/pre-commit
 # Uses --merge so a partial machine can't wipe the list; no-op without the CLI.
+# Config (settings/keybindings/snippets) is intentionally NOT auto-staged: it has
+# no merge semantics, so it's exported and committed deliberately via export.sh.
 
 set -euo pipefail
 
@@ -11,4 +13,4 @@ CODE_BIN="${CODE_BIN:-code}"
 command -v "${CODE_BIN}" >/dev/null 2>&1 || exit 0
 
 "${ROOT}/bin/export.sh" --merge >/dev/null
-git add "${ROOT}/extensions.list" "${ROOT}/config"
+git add "${ROOT}/extensions.list"

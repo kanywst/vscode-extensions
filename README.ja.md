@@ -81,6 +81,8 @@ ln -s ../../bin/pre-commit .git/hooks/pre-commit
 
 hook は意図的に `bin/export.sh --merge` を使う。追跡セットの一部しか入っていないマシンで commit しても、新規分を足すだけで既存を**削除しない**ため、基準セットを黙って消す事故が起きない。削除は `bin/export.sh` (フラグなし) で明示的に行う。
 
+hook が stage するのは `extensions.list` のみ。config (`settings.json` / `keybindings.json` / `snippets/`) には merge の概念が無く、部分的なマシンの設定で基準を上書きすべきでないため、`bin/export.sh` + `git add config` で明示的に commit する運用に委ねる。
+
 ## 別エディタを使う場合
 
 Cursor / VSCodium / Insiders など `code` 以外の CLI を使うときは `CODE_BIN` を指定する。

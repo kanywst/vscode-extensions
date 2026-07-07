@@ -29,6 +29,10 @@ cat "${tmp}" > "${LIST_FILE}"
 count="$(grep -c '' "${LIST_FILE}" || true)"
 echo "Exported ${count} extensions to ${LIST_FILE#"${REPO_ROOT}"/}"
 
-# Snapshot the rest of the setup (settings / keybindings / snippets) alongside it.
-export_config
-echo "Synced VS Code config to ${CONFIG_DIR#"${REPO_ROOT}"/}/"
+# Config has no merge semantics, so only snapshot it on a full export — never on
+# --merge (the pre-commit path), where a partial machine could overwrite the
+# tracked settings/keybindings baseline with its own (or leak a local secret).
+if [ "${1:-}" != "--merge" ]; then
+  export_config
+  echo "Synced VS Code config to ${CONFIG_DIR#"${REPO_ROOT}"/}/"
+fi
