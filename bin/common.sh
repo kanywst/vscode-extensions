@@ -113,7 +113,18 @@ install_config() {
     fi
     cp "${src}" "${dst}"
   done
-  mirror_snippets "${CONFIG_DIR}/snippets" "${CODE_USER_DIR}/snippets"
+  # Only restore snippets when the repo tracks them, so an absent config/snippets
+  # can't silently wipe the live set. Back up differing live snippets to
+  # snippets.bak first, same recoverability as the flat files above.
+  if [ -d "${CONFIG_DIR}/snippets" ]; then
+    if [ -d "${CODE_USER_DIR}/snippets" ] \
+      && ! diff -rq --exclude=.gitkeep \
+        "${CONFIG_DIR}/snippets" "${CODE_USER_DIR}/snippets" >/dev/null 2>&1; then
+      rm -rf "${CODE_USER_DIR}/snippets.bak"
+      cp -R "${CODE_USER_DIR}/snippets" "${CODE_USER_DIR}/snippets.bak"
+    fi
+    mirror_snippets "${CONFIG_DIR}/snippets" "${CODE_USER_DIR}/snippets"
+  fi
 }
 
 # Print one drift line per config difference between repo and live dir; prints

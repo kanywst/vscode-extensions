@@ -81,6 +81,8 @@ ln -s ../../bin/pre-commit .git/hooks/pre-commit
 
 The hook uses `bin/export.sh --merge` on purpose: committing on a machine that only has a subset of the tracked set installed adds new extensions but **never removes** any, so it can't silently wipe the baseline. Prune deliberately with `bin/export.sh` (no flag).
 
+The hook stages only `extensions.list`. Config (`settings.json` / `keybindings.json` / `snippets/`) has no merge semantics — a partial machine's settings shouldn't overwrite the tracked baseline — so it's left to a deliberate `bin/export.sh` + `git add config`.
+
 ## Using another editor
 
 For a CLI other than `code` (Cursor, VSCodium, Insiders), set `CODE_BIN`.
