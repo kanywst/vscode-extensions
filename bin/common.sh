@@ -51,9 +51,14 @@ tracked_extensions() {
 # setup. mcp.json is deliberately NOT tracked here — MCP config lives in
 # ~/dotclaude, so copying it in would fight that source of truth.
 
-# VS Code stable's User dir (macOS default). Override for a non-standard install
-# or another OS, mirroring how CODE_BIN swaps the CLI.
-CODE_USER_DIR="${CODE_USER_DIR:-${HOME}/Library/Application Support/Code/User}"
+# VS Code stable's User dir, defaulted per-OS (macOS vs Linux/WSL). Override for
+# a non-standard install or another editor, mirroring how CODE_BIN swaps the CLI.
+if [ -z "${CODE_USER_DIR:-}" ]; then
+  case "$(uname -s)" in
+    Darwin) CODE_USER_DIR="${HOME}/Library/Application Support/Code/User" ;;
+    *)      CODE_USER_DIR="${HOME}/.config/Code/User" ;;
+  esac
+fi
 # Repo-tracked copy of that config.
 CONFIG_DIR="${REPO_ROOT}/config"
 # Flat files mirrored verbatim between the two dirs.
@@ -75,7 +80,9 @@ mirror_snippets() {
   local src="${1}" dst="${2}"
   mkdir -p "${dst}"
   find "${dst}" -type f ! -name '.gitkeep' -delete
-  [ -d "${src}" ] && cp -R "${src}/." "${dst}/" 2>/dev/null
+  # Don't hide cp errors: under set -e a silent failure here would abort the
+  # whole restore with no clue why. Let stderr through.
+  [ -d "${src}" ] && cp -R "${src}/." "${dst}/"
   if [ "${dst}" = "${CONFIG_DIR}/snippets" ]; then
     touch "${dst}/.gitkeep"
   else

@@ -94,7 +94,7 @@ CODE_BIN=codium bin/install.sh
 
 レジストリの違いに注意。`code` は VS Code Marketplace、Cursor / VSCodium / Windsurf は Open VSX からインストールする。あるエディタで書き出した ID が別のエディタのレジストリには無いことがある (Microsoft 製の一部は Marketplace 専用で、Cursor は別 ID の独自版を持つ)。`bin/install.sh` はそこで中断せず、入れられる分だけ入れて、対象エディタで見つからなかった ID を一覧表示する。
 
-設定の同期は `CODE_USER_DIR` を読み書きする。既定は VS Code 安定版の User ディレクトリ (macOS では `~/Library/Application Support/Code/User`)。別エディタの User ディレクトリを指せば、そのエディタの設定を同期できる。
+設定の同期は `CODE_USER_DIR` を読み書きする。既定は VS Code 安定版の User ディレクトリを OS 別に判定する (macOS は `~/Library/Application Support/Code/User`、Linux/WSL は `~/.config/Code/User`)。別エディタの User ディレクトリを指せば、そのエディタの設定を同期できる。
 
 ```bash
 CODE_USER_DIR="$HOME/Library/Application Support/Cursor/User" CODE_BIN=cursor bin/export.sh

@@ -94,7 +94,7 @@ CODE_BIN=codium bin/install.sh
 
 Note the registry difference: `code` installs from the VS Code Marketplace, while Cursor, VSCodium, and Windsurf install from Open VSX. An ID exported from one editor may not exist on the other's registry (some Microsoft extensions are Marketplace-only, and Cursor ships its own replacements under different IDs). `bin/install.sh` doesn't abort on those — it installs what it can and lists whatever the target editor couldn't find.
 
-Config sync reads and writes `CODE_USER_DIR`, which defaults to VS Code stable's User dir (`~/Library/Application Support/Code/User` on macOS). Point it at another editor's User dir to sync that editor's config instead.
+Config sync reads and writes `CODE_USER_DIR`, which defaults to VS Code stable's User dir per OS (`~/Library/Application Support/Code/User` on macOS, `~/.config/Code/User` on Linux/WSL). Point it at another editor's User dir to sync that editor's config instead.
 
 ```bash
 CODE_USER_DIR="$HOME/Library/Application Support/Cursor/User" CODE_BIN=cursor bin/export.sh
