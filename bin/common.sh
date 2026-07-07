@@ -45,3 +45,85 @@ tracked_extensions() {
     | tr '[:upper:]' '[:lower:]' \
     | LC_ALL=C sort
 }
+
+# --- User config (settings / keybindings / snippets) ------------------------
+# The list only captures extension IDs; these three carry the rest of a VS Code
+# setup. mcp.json is deliberately NOT tracked here — MCP config lives in
+# ~/dotclaude, so copying it in would fight that source of truth.
+
+# VS Code stable's User dir (macOS default). Override for a non-standard install
+# or another OS, mirroring how CODE_BIN swaps the CLI.
+CODE_USER_DIR="${CODE_USER_DIR:-${HOME}/Library/Application Support/Code/User}"
+# Repo-tracked copy of that config.
+CONFIG_DIR="${REPO_ROOT}/config"
+# Flat files mirrored verbatim between the two dirs.
+CONFIG_FILES=(settings.json keybindings.json)
+
+# Copy a file only when the source exists; make the parent dir first. Always
+# returns 0 so a missing optional file (e.g. no keybindings yet) can't trip set -e.
+copy_if_present() {
+  local src="${1}" dst="${2}"
+  [ -f "${src}" ] || return 0
+  mkdir -p "$(dirname "${dst}")"
+  cp "${src}" "${dst}"
+}
+
+# Mirror snippet files from src/ into dst/ (files only). Keeps dst/.gitkeep so the
+# tracked frame survives in git even when there are no snippets yet.
+mirror_snippets() {
+  local src="${1}" dst="${2}"
+  mkdir -p "${dst}"
+  find "${dst}" -type f ! -name '.gitkeep' -delete
+  [ -d "${src}" ] && cp -R "${src}/." "${dst}/" 2>/dev/null
+  return 0
+}
+
+# Export the live VS Code config into the repo's config/ dir.
+export_config() {
+  local f
+  for f in "${CONFIG_FILES[@]}"; do
+    copy_if_present "${CODE_USER_DIR}/${f}" "${CONFIG_DIR}/${f}"
+  done
+  mirror_snippets "${CODE_USER_DIR}/snippets" "${CONFIG_DIR}/snippets"
+}
+
+# Restore the repo's config/ into the live VS Code User dir. Any existing file
+# that differs is backed up to <file>.bak first, so a re-run on a used machine
+# stays recoverable instead of silently clobbering local tweaks.
+install_config() {
+  local f src dst
+  mkdir -p "${CODE_USER_DIR}"
+  for f in "${CONFIG_FILES[@]}"; do
+    src="${CONFIG_DIR}/${f}"
+    dst="${CODE_USER_DIR}/${f}"
+    [ -f "${src}" ] || continue
+    if [ -f "${dst}" ] && ! diff -q "${src}" "${dst}" >/dev/null; then
+      cp "${dst}" "${dst}.bak"
+    fi
+    cp "${src}" "${dst}"
+  done
+  mirror_snippets "${CONFIG_DIR}/snippets" "${CODE_USER_DIR}/snippets"
+}
+
+# Print one drift line per config difference between repo and live dir; prints
+# nothing when they match. Callers fold non-empty output into their exit code.
+diff_config() {
+  local f src dst
+  for f in "${CONFIG_FILES[@]}"; do
+    src="${CONFIG_DIR}/${f}"
+    dst="${CODE_USER_DIR}/${f}"
+    if [ -f "${src}" ] && [ ! -f "${dst}" ]; then
+      printf '  live-missing %s\n' "${f}"
+    elif [ ! -f "${src}" ] && [ -f "${dst}" ]; then
+      printf '  untracked    %s\n' "${f}"
+    elif [ -f "${src}" ] && ! diff -q "${src}" "${dst}" >/dev/null; then
+      printf '  differs      %s\n' "${f}"
+    fi
+  done
+  if [ -d "${CONFIG_DIR}/snippets" ] && [ -d "${CODE_USER_DIR}/snippets" ]; then
+    [ -n "$(diff -rq --exclude=.gitkeep \
+        "${CONFIG_DIR}/snippets" "${CODE_USER_DIR}/snippets" 2>/dev/null)" ] \
+      && printf '  differs      snippets/\n'
+  fi
+  return 0
+}

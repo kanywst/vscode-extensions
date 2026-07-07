@@ -28,3 +28,7 @@ cat "${tmp}" > "${LIST_FILE}"
 
 count="$(grep -c '' "${LIST_FILE}" || true)"
 echo "Exported ${count} extensions to ${LIST_FILE#"${REPO_ROOT}"/}"
+
+# Snapshot the rest of the setup (settings / keybindings / snippets) alongside it.
+export_config
+echo "Synced VS Code config to ${CONFIG_DIR#"${REPO_ROOT}"/}/"

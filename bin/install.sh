@@ -12,6 +12,11 @@ fi
 
 require_code_bin
 
+# Restore settings / keybindings / snippets first — independent of the list, so
+# it still runs even when there are no extensions to install.
+install_config
+echo "Restored VS Code config to ${CODE_USER_DIR}"
+
 # One editor launch for the whole list: a single argv of repeated flags.
 # Pre-evaluate so a failed listing trips set -e instead of a lost subshell status.
 # uniq: a hand-edited duplicate would otherwise be miscounted and mis-reported.

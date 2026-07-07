@@ -5,9 +5,9 @@
 
 _English | [日本語](README.ja.md)_
 
-Track the VS Code extension list in git and reinstall the same set on any machine.
+Track your VS Code setup — the extension list plus user config — in git and reproduce it on any machine.
 
-`extensions.list` holds the extension IDs. The scripts in `bin/` write it from the editor, install from it, and report drift.
+`extensions.list` holds the extension IDs; `config/` holds `settings.json`, `keybindings.json`, and `snippets/`. The scripts in `bin/` write both from the editor, install them back, and report drift.
 
 ## Why a git-tracked list
 
@@ -18,7 +18,7 @@ Settings Sync and exported Profiles already move extensions between machines, so
 - **Plain text** — `grep`, `diff`, and code review work on it directly.
 - **Editor-agnostic** — the same scripts drive `code`, `codium`, or `cursor` via `CODE_BIN`.
 
-Only extension IDs are tracked, not `settings.json` or keybindings — it's complementary to Settings Sync, not a replacement.
+It tracks extension IDs plus `settings.json`, `keybindings.json`, and `snippets/` — enough to rebuild a machine from a clone, and complementary to Settings Sync rather than a replacement. MCP config (`mcp.json`) is intentionally left out; that's managed separately under `~/dotclaude`.
 
 ## Usage
 
@@ -35,7 +35,7 @@ git push -u origin main
 
 ### 2. Reproduce on another machine
 
-Clone the repo and install everything in the list. The whole list installs in a single editor launch, and re-running is safe — installed extensions are skipped.
+Clone the repo and install everything in the list. The whole list installs in a single editor launch, and re-running is safe — installed extensions are skipped. `bin/install.sh` also restores `settings.json`, `keybindings.json`, and `snippets/` into VS Code's User dir, backing up any existing file that differs to `<file>.bak` first.
 
 ```bash
 git clone git@github.com:<you>/vscode-extensions.git ~/vscode-extensions
@@ -43,14 +43,14 @@ cd ~/vscode-extensions
 bin/install.sh
 ```
 
-### 3. After adding or removing an extension
+### 3. After changing extensions or settings
 
-When you install or uninstall something in VS Code, re-export and commit the diff.
+When you install/uninstall an extension or tweak your settings in VS Code, re-export and commit the diff. `bin/export.sh` snapshots both the list and `config/`.
 
 ```bash
 bin/export.sh
-git add extensions.list
-git commit -m "chore: update extensions"
+git add extensions.list config
+git commit -m "chore: update extensions and config"
 ```
 
 `bin/export.sh` mirrors the currently installed set exactly, so this is also how you **prune** an extension from the list. To add newly installed extensions without ever removing any, use `bin/export.sh --merge`.
@@ -92,9 +92,16 @@ CODE_BIN=codium bin/install.sh
 
 Note the registry difference: `code` installs from the VS Code Marketplace, while Cursor, VSCodium, and Windsurf install from Open VSX. An ID exported from one editor may not exist on the other's registry (some Microsoft extensions are Marketplace-only, and Cursor ships its own replacements under different IDs). `bin/install.sh` doesn't abort on those — it installs what it can and lists whatever the target editor couldn't find.
 
+Config sync reads and writes `CODE_USER_DIR`, which defaults to VS Code stable's User dir (`~/Library/Application Support/Code/User` on macOS). Point it at another editor's User dir to sync that editor's config instead.
+
+```bash
+CODE_USER_DIR="$HOME/Library/Application Support/Cursor/User" CODE_BIN=cursor bin/export.sh
+```
+
 ## Notes
 
 - The `code` command must be on `PATH`. Add it from the Command Palette: `Shell Command: Install 'code' command in PATH`.
-- Only extension IDs (`publisher.name`) are tracked, not `settings.json` or keybindings.
+- Tracked: extension IDs (`publisher.name`), `settings.json`, `keybindings.json`, and `snippets/`. Not tracked: `mcp.json` (managed under `~/dotclaude`), and anything outside VS Code's User dir.
 - `bin/install.sh` runs `code --install-extension --force`, which also updates an already-installed extension to the latest version.
 - `extensions.list` is written lowercased and sorted so diffs stay clean.
+- `config/settings.json` is copied verbatim — review it before committing so no machine-local secret slips into git.

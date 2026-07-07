@@ -31,8 +31,15 @@ if [ -n "${to_remove}" ]; then
   emit "${to_remove}" | sed 's/^/  - /'
 fi
 
+config_drift="$(diff_config)"
+if [ -n "${config_drift}" ]; then
+  drift=1
+  echo "VS Code config drift (bin/export.sh to record, bin/install.sh to restore):"
+  emit "${config_drift}"
+fi
+
 if [ "${drift}" -eq 0 ]; then
-  echo "In sync: installed extensions match extensions.list."
+  echo "In sync: installed extensions and config match the repo."
 fi
 
 exit "${drift}"

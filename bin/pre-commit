@@ -11,4 +11,4 @@ CODE_BIN="${CODE_BIN:-code}"
 command -v "${CODE_BIN}" >/dev/null 2>&1 || exit 0
 
 "${ROOT}/bin/export.sh" --merge >/dev/null
-git add "${ROOT}/extensions.list"
+git add "${ROOT}/extensions.list" "${ROOT}/config"

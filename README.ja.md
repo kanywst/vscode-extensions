@@ -5,9 +5,9 @@
 
 _[English](README.md) | 日本語_
 
-VS Code の拡張機能リストを git で管理し、同じセットをどのマシンにも再現する。
+VS Code のセットアップ (拡張機能リスト + ユーザー設定) を git で管理し、同じ状態をどのマシンにも再現する。
 
-`extensions.list` が拡張機能ID を保持する。`bin/` のスクリプトがエディタから書き出し / リストからインストール / 差分確認を行う。
+`extensions.list` が拡張機能ID を、`config/` が `settings.json` / `keybindings.json` / `snippets/` を保持する。`bin/` のスクリプトが両方をエディタから書き出し / インストールし直し / 差分確認する。
 
 ## なぜ git 管理のリストなのか
 
@@ -18,7 +18,7 @@ Settings Sync やエクスポートした Profiles でも拡張機能はマシ�
 - **plain text** — `grep` / `diff` / コードレビューがそのまま効く。
 - **エディタ非依存** — `CODE_BIN` で `code` / `codium` / `cursor` を同じスクリプトで駆動できる。
 
-管理対象は拡張機能ID のみで `settings.json` やキーバインドは含まない。Settings Sync の代替ではなく補完。
+管理対象は拡張機能ID に加えて `settings.json` / `keybindings.json` / `snippets/`。clone からマシンを組み直せるだけの範囲を押さえる。Settings Sync の代替ではなく補完。MCP 設定 (`mcp.json`) は意図的に対象外 — そちらは `~/dotclaude` で別管理する。
 
 ## 使い方
 
@@ -35,7 +35,7 @@ git push -u origin main
 
 ### 2. 別のマシンで再現する
 
-clone してリストどおりにインストールする。リスト全体を 1 回のエディタ起動でまとめて入れる。再実行は安全で、入っている拡張機能はスキップされる。
+clone してリストどおりにインストールする。リスト全体を 1 回のエディタ起動でまとめて入れる。再実行は安全で、入っている拡張機能はスキップされる。`bin/install.sh` は `settings.json` / `keybindings.json` / `snippets/` も VS Code の User ディレクトリへ復元する。既存ファイルが異なる場合は先に `<file>.bak` へ退避する。
 
 ```bash
 git clone git@github.com:<you>/vscode-extensions.git ~/vscode-extensions
@@ -43,14 +43,14 @@ cd ~/vscode-extensions
 bin/install.sh
 ```
 
-### 3. 拡張機能を追加・削除したあと
+### 3. 拡張機能や設定を変えたあと
 
-VS Code 上で入れたり消したりしたら、再書き出しして差分を commit する。
+VS Code 上で拡張機能を入れ替えたり設定を変えたら、再書き出しして差分を commit する。`bin/export.sh` はリストと `config/` の両方をスナップショットする。
 
 ```bash
 bin/export.sh
-git add extensions.list
-git commit -m "chore: update extensions"
+git add extensions.list config
+git commit -m "chore: update extensions and config"
 ```
 
 `bin/export.sh` は現在の導入済みセットをそのまま鏡写しにするので、拡張機能をリストから**削除 (prune)** する手段でもある。削除せず新規導入分だけ追記したいときは `bin/export.sh --merge` を使う。
@@ -92,9 +92,16 @@ CODE_BIN=codium bin/install.sh
 
 レジストリの違いに注意。`code` は VS Code Marketplace、Cursor / VSCodium / Windsurf は Open VSX からインストールする。あるエディタで書き出した ID が別のエディタのレジストリには無いことがある (Microsoft 製の一部は Marketplace 専用で、Cursor は別 ID の独自版を持つ)。`bin/install.sh` はそこで中断せず、入れられる分だけ入れて、対象エディタで見つからなかった ID を一覧表示する。
 
+設定の同期は `CODE_USER_DIR` を読み書きする。既定は VS Code 安定版の User ディレクトリ (macOS では `~/Library/Application Support/Code/User`)。別エディタの User ディレクトリを指せば、そのエディタの設定を同期できる。
+
+```bash
+CODE_USER_DIR="$HOME/Library/Application Support/Cursor/User" CODE_BIN=cursor bin/export.sh
+```
+
 ## 注意点
 
 - `code` コマンドが PATH に必要。コマンドパレットの `Shell Command: Install 'code' command in PATH` で追加する。
-- 管理対象は拡張機能ID (`publisher.name`) のみ。`settings.json` やキーバインドは対象外。
+- 管理対象は拡張機能ID (`publisher.name`) / `settings.json` / `keybindings.json` / `snippets/`。`mcp.json` は対象外 (`~/dotclaude` で管理)、User ディレクトリ外のものも対象外。
 - `bin/install.sh` は `code --install-extension --force` を実行するため、導入済みの拡張機能も最新版に更新される。
 - `extensions.list` は小文字化・ソート済みで書き出されるので diff が安定する。
+- `config/settings.json` はそのままコピーされる。マシン固有の秘密情報が git に混ざらないよう commit 前に中身を確認すること。
