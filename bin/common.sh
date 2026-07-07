@@ -78,8 +78,12 @@ copy_if_present() {
 # in the live dir, where VS Code would try to parse it as a snippet.
 mirror_snippets() {
   local src="${1}" dst="${2}"
+  # Replace dst wholesale instead of pruning files in place: rm -rf drops a
+  # symlinked dir to just its link (not the target's neighbours) and sidesteps
+  # BSD find's refusal to traverse a symlinked path without a trailing slash,
+  # keeping this consistent with how the flat files replace a symlink.
+  rm -rf "${dst}"
   mkdir -p "${dst}"
-  find "${dst}" -type f ! -name '.gitkeep' -delete
   # Don't hide cp errors: under set -e a silent failure here would abort the
   # whole restore with no clue why. Let stderr through.
   [ -d "${src}" ] && cp -R "${src}/." "${dst}/"
@@ -125,8 +129,8 @@ install_config() {
   # snippets.bak first, same recoverability as the flat files above.
   if [ -d "${CONFIG_DIR}/snippets" ]; then
     if [ -d "${CODE_USER_DIR}/snippets" ] \
-      && ! diff -rq --exclude=.gitkeep \
-        "${CONFIG_DIR}/snippets" "${CODE_USER_DIR}/snippets" >/dev/null 2>&1; then
+      && ! diff -rq -x .gitkeep \
+        "${CONFIG_DIR}/snippets/" "${CODE_USER_DIR}/snippets/" >/dev/null 2>&1; then
       rm -rf "${CODE_USER_DIR}/snippets.bak"
       cp -R "${CODE_USER_DIR}/snippets" "${CODE_USER_DIR}/snippets.bak"
     fi
@@ -153,13 +157,15 @@ diff_config() {
   # has snippets and the other doesn't, as well as when both differ in content.
   repo_has=0
   live_has=0
-  [ -n "$(find "${CONFIG_DIR}/snippets" -type f ! -name '.gitkeep' 2>/dev/null)" ] && repo_has=1
-  [ -n "$(find "${CODE_USER_DIR}/snippets" -type f 2>/dev/null)" ] && live_has=1
+  # Trailing slash forces BSD find/diff to traverse a symlinked snippets dir;
+  # -x is the portable spelling of diff's exclude (GNU + BSD), unlike --exclude.
+  [ -n "$(find "${CONFIG_DIR}/snippets/" -type f ! -name '.gitkeep' 2>/dev/null)" ] && repo_has=1
+  [ -n "$(find "${CODE_USER_DIR}/snippets/" -type f 2>/dev/null)" ] && live_has=1
   if [ "${repo_has}" -ne "${live_has}" ]; then
     printf '  differs      snippets/\n'
   elif [ "${repo_has}" -eq 1 ]; then
-    [ -n "$(diff -rq --exclude=.gitkeep \
-        "${CONFIG_DIR}/snippets" "${CODE_USER_DIR}/snippets" 2>/dev/null)" ] \
+    [ -n "$(diff -rq -x .gitkeep \
+        "${CONFIG_DIR}/snippets/" "${CODE_USER_DIR}/snippets/" 2>/dev/null)" ] \
       && printf '  differs      snippets/\n'
   fi
   return 0
