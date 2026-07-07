@@ -132,7 +132,9 @@ install_config() {
       && ! diff -rq -x .gitkeep \
         "${CONFIG_DIR}/snippets/" "${CODE_USER_DIR}/snippets/" >/dev/null 2>&1; then
       rm -rf "${CODE_USER_DIR}/snippets.bak"
-      cp -R "${CODE_USER_DIR}/snippets" "${CODE_USER_DIR}/snippets.bak"
+      # Trailing slash dereferences a symlinked live dir so the backup is a real
+      # copy of the files, not just another link to the same dotfiles target.
+      cp -R "${CODE_USER_DIR}/snippets/" "${CODE_USER_DIR}/snippets.bak"
     fi
     mirror_snippets "${CONFIG_DIR}/snippets" "${CODE_USER_DIR}/snippets"
   fi
