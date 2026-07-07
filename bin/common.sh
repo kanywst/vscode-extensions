@@ -68,13 +68,19 @@ copy_if_present() {
   cp "${src}" "${dst}"
 }
 
-# Mirror snippet files from src/ into dst/ (files only). Keeps dst/.gitkeep so the
-# tracked frame survives in git even when there are no snippets yet.
+# Mirror snippet files from src/ into dst/ (files only). Keeps .gitkeep only in
+# the tracked repo copy (so the empty frame survives in git) and never leaves it
+# in the live dir, where VS Code would try to parse it as a snippet.
 mirror_snippets() {
   local src="${1}" dst="${2}"
   mkdir -p "${dst}"
   find "${dst}" -type f ! -name '.gitkeep' -delete
   [ -d "${src}" ] && cp -R "${src}/." "${dst}/" 2>/dev/null
+  if [ "${dst}" = "${CONFIG_DIR}/snippets" ]; then
+    touch "${dst}/.gitkeep"
+  else
+    rm -f "${dst}/.gitkeep"
+  fi
   return 0
 }
 
@@ -97,8 +103,13 @@ install_config() {
     src="${CONFIG_DIR}/${f}"
     dst="${CODE_USER_DIR}/${f}"
     [ -f "${src}" ] || continue
-    if [ -f "${dst}" ] && ! diff -q "${src}" "${dst}" >/dev/null; then
-      cp "${dst}" "${dst}.bak"
+    # dst may be a symlink into a dotfiles repo. Skip when content already
+    # matches; otherwise back up the current target and replace the link/file
+    # itself (rm then cp) instead of writing through the symlink.
+    if [ -L "${dst}" ] || [ -f "${dst}" ]; then
+      diff -q "${src}" "${dst}" >/dev/null 2>&1 && continue
+      [ -e "${dst}" ] && cp "${dst}" "${dst}.bak"
+      rm -f "${dst}"
     fi
     cp "${src}" "${dst}"
   done
@@ -108,7 +119,7 @@ install_config() {
 # Print one drift line per config difference between repo and live dir; prints
 # nothing when they match. Callers fold non-empty output into their exit code.
 diff_config() {
-  local f src dst
+  local f src dst repo_has live_has
   for f in "${CONFIG_FILES[@]}"; do
     src="${CONFIG_DIR}/${f}"
     dst="${CODE_USER_DIR}/${f}"
@@ -120,7 +131,15 @@ diff_config() {
       printf '  differs      %s\n' "${f}"
     fi
   done
-  if [ -d "${CONFIG_DIR}/snippets" ] && [ -d "${CODE_USER_DIR}/snippets" ]; then
+  # Compare real snippet files only (ignore .gitkeep). Flag drift when one side
+  # has snippets and the other doesn't, as well as when both differ in content.
+  repo_has=0
+  live_has=0
+  [ -n "$(find "${CONFIG_DIR}/snippets" -type f ! -name '.gitkeep' 2>/dev/null)" ] && repo_has=1
+  [ -n "$(find "${CODE_USER_DIR}/snippets" -type f 2>/dev/null)" ] && live_has=1
+  if [ "${repo_has}" -ne "${live_has}" ]; then
+    printf '  differs      snippets/\n'
+  elif [ "${repo_has}" -eq 1 ]; then
     [ -n "$(diff -rq --exclude=.gitkeep \
         "${CONFIG_DIR}/snippets" "${CODE_USER_DIR}/snippets" 2>/dev/null)" ] \
       && printf '  differs      snippets/\n'
