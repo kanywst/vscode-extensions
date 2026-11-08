@@ -1,3 +1,6 @@
+> [!WARNING]
+> **2026-11-08 に [kanywst/dotfiles](https://github.com/kanywst/dotfiles) へ統合した。2026-12-08 以降に archive する。** マシン設定の一部にすぎないものを別リポで保守する理由がなくなったため。拡張リストは [`vscode/extensions.list`](https://github.com/kanywst/dotfiles/blob/main/vscode/extensions.list)、`settings.json` は [stow パッケージ `vscode/`](https://github.com/kanywst/dotfiles/tree/main/vscode)、スクリプトは [`vscode-ext`](https://github.com/kanywst/dotfiles/blob/main/bin/.local/bin/vscode-ext) (`install` / `export [--merge]` / `diff` / `lint`) に移った。
+
 ![vscode-extensions — track & reinstall your VS Code setup](assets/banner.png)
 
 [![CI](https://github.com/kanywst/vscode-extensions/actions/workflows/ci.yml/badge.svg)](https://github.com/kanywst/vscode-extensions/actions/workflows/ci.yml)
