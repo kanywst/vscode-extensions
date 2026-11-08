@@ -1,5 +1,5 @@
 > [!WARNING]
-> **Merged into [kanywst/dotfiles](https://github.com/kanywst/dotfiles) on 2026-11-08, to be archived on or after 2026-12-08.** It was one more repo to keep up for something that is just part of my machine setup. The extension list now lives in [`vscode/extensions.list`](https://github.com/kanywst/dotfiles/blob/main/vscode/extensions.list), `settings.json` in the [`vscode/` stow package](https://github.com/kanywst/dotfiles/tree/main/vscode), and the scripts became [`vscode-ext`](https://github.com/kanywst/dotfiles/blob/main/bin/.local/bin/vscode-ext) (`install [--update]` / `export [--prune]` / `diff` / `lint`).
+> **Merged into [kanywst/dotfiles](https://github.com/kanywst/dotfiles) on 2026-11-08, archived on 2026-11-08.** It was one more repo to keep up for something that is just part of my machine setup. The extension list now lives in [`vscode/extensions.list`](https://github.com/kanywst/dotfiles/blob/main/vscode/extensions.list), `settings.json` in the [`vscode/` stow package](https://github.com/kanywst/dotfiles/tree/main/vscode), and the scripts became [`vscode-ext`](https://github.com/kanywst/dotfiles/blob/main/bin/.local/bin/vscode-ext) (`install [--update]` / `export [--prune]` / `diff` / `lint`).
 
 ![vscode-extensions — track & reinstall your VS Code setup](assets/banner.png)
 
